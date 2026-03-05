@@ -1,37 +1,47 @@
-import { Item } from "./types";
+// app/lib/tsv.ts
 
-const toNum = (v: string) => {
-  const s = (v ?? "").toString().replace(/[^\d]/g, "");
-  return s ? Number(s) : null;
+export type TsvRow = {
+  name: string;
+  imageUrl: string;
+  linkUrl: string;
+  price: number | null;
+  sale: number | null;
+  rate: number | null;
+  opt1: string;
+  opt2: string;
+  badge?: string; // ✅ 추가 (NEW/HOT)
 };
 
-export function parseTsv(tsv: string): Omit<Item, "id">[] {
-  const raw = (tsv ?? "").trim();
-  if (!raw) return [];
+function numOnly(x: string): number | null {
+  const s = String(x ?? "").replace(/[^\d]/g, "");
+  return s ? Number(s) : null;
+}
 
-  const lines = raw.split(/\r?\n/).filter(Boolean);
-  const rows = lines.map((l) => l.split("\t"));
+export function parseTsv(raw: string): TsvRow[] {
+  const text = (raw ?? "").trim();
+  if (!text) return [];
 
-  const firstLine = rows[0]?.join(" ") ?? "";
-  const looksHeader =
-    /상품명|이미지|링크|정상가|할인가|옵션|아이콘/i.test(firstLine);
+  const lines = text.split(/\r?\n/).filter(Boolean);
 
-  const data = looksHeader ? rows.slice(1) : rows;
+  // 헤더가 있으면 제거(대충 감지)
+  const first = (lines[0] ?? "").toLowerCase();
+  const hasHeader =
+    first.includes("상품명") ||
+    first.includes("image") ||
+    first.includes("이미지") ||
+    first.includes("링크");
 
-  return data
-    .map((c) => {
-      const icon = (c[8] ?? "").toUpperCase();
-      return {
-        name: c[0] ?? "",
-        imageUrl: c[1] ?? "",
-        linkUrl: c[2] ?? "",
-        price: toNum(c[3] ?? ""),
-        salePrice: toNum(c[4] ?? ""),
-        option1: c[6] ?? "",
-        option2: c[7] ?? "",
-        badgeNew: icon.includes("NEW"),
-        badgeHot: icon.includes("HOT"),
-      };
-    })
-    .filter((r) => r.name || r.imageUrl || r.linkUrl);
+  const rows = (hasHeader ? lines.slice(1) : lines).map((line) => line.split("\t"));
+
+  return rows.map((c) => ({
+    name: (c[0] ?? "").trim(),
+    imageUrl: (c[1] ?? "").trim(),
+    linkUrl: (c[2] ?? "").trim(),
+    price: c[3] ? numOnly(c[3]) : null,
+    sale: c[4] ? numOnly(c[4]) : null,
+    rate: c[5] ? numOnly(c[5]) : null,
+    opt1: (c[6] ?? "").trim(),
+    opt2: (c[7] ?? "").trim(),
+    badge: (c[8] ?? "").trim(), // ✅ 마지막 컬럼을 badge로
+  }));
 }
