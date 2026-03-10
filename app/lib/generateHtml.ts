@@ -1,10 +1,6 @@
 // app/lib/generateHtml.ts
 import type { Item, ThemeKey } from "./types";
 
-/* ============================= */
-/* 유틸 */
-/* ============================= */
-
 function esc(s: unknown) {
   return String(s ?? "")
     .replaceAll("&", "&amp;")
@@ -31,43 +27,59 @@ function calcRate(price: number | null, sale: number | null) {
   return Math.max(0, Math.min(99, r));
 }
 
-/* ============================= */
-/* HTML 생성 */
-/* ============================= */
-
 export function buildBoriboriHtml(args: {
   bannerText: string;
   themeKey: ThemeKey;
   items: Item[];
 }) {
-  /* ===== 테마 (프레임색 = 라인색 완전 동일) ===== */
+  // ✅ 프레임색: 기존보다 더 밝은 파스텔톤
   const theme = (() => {
     switch (args.themeKey) {
       case "pastelBlue":
-        return { frame: "#BFDDF5", line: "#BFDDF5" };
+        return {
+          frame: "#CFE6FF",
+          line: "#CFE6FF",
+          numBg: "#D9ECFF",
+          numText: "#4F87C7",
+        };
       case "pastelPink":
-        return { frame: "#F2C7D3", line: "#F2C7D3" };
+        return {
+          frame: "#F7D7E4",
+          line: "#F7D7E4",
+          numBg: "#FBE4EC",
+          numText: "#C77395",
+        };
       case "pastelMint":
-        return { frame: "#BFE8DC", line: "#BFE8DC" };
-
+        return {
+          frame: "#D8F1E8",
+          line: "#D8F1E8",
+          numBg: "#E5F8F1",
+          numText: "#5FAE95",
+        };
       case "clean":
       case "cleanWhite":
-        return { frame: "#EAEAEA", line: "#EAEAEA" };
-
+        return {
+          frame: "#F1F1F1",
+          line: "#E8E8E8",
+          numBg: "#F4F4F4",
+          numText: "#777777",
+        };
       case "yellow":
       case "yellowFrame":
       default:
-        return { frame: "#E2B84A", line: "#E2B84A" };
+        return {
+          // ✅ 더 밝은 파스텔 노랑
+          frame: "#F6D97A",
+          line: "#F1CF62",
+          numBg: "#F9E7A8",
+          numText: "#B58A1A",
+        };
     }
   })();
 
   const bannerText = esc(
     args.bannerText || "이미지를 클릭하면 상세이미지를 보실 수 있어요"
   );
-
-  /* ============================= */
-  /* CSS */
-  /* ============================= */
 
   const css = `
 .ozbbWrap{
@@ -77,26 +89,52 @@ export function buildBoriboriHtml(args: {
   color:#111;
 }
 
-/* 상단 문구: 테이블 형태 + 테두리 */
-.ozbbNotice{
-  width:100%;
-  border-collapse:collapse;
-  margin:0 0 10px 0;
+/* ✅ 부드러운 말풍선/클라우드 느낌 배너 */
+.ozbbNoticeWrap{
+  margin:0 0 12px 0;
+  display:flex;
+  justify-content:center;
 }
-.ozbbNotice td{
-  border:2px solid ${theme.line};
-  background:#fff;
+.ozbbNotice{
+  position:relative;
+  min-width:72%;
+  max-width:100%;
   text-align:center;
-  padding:12px 10px;
+  padding:14px 24px;
   font-size:18px;
   font-weight:800;
   letter-spacing:-0.02em;
+  color:#111;
+  background:#fffdf7;
+  border:2px solid ${theme.line};
+  border-radius:999px;
+  box-shadow:0 4px 10px rgba(0,0,0,.04);
+}
+.ozbbNotice:before,
+.ozbbNotice:after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:26px;
+  height:26px;
+  background:#fffdf7;
+  border:2px solid ${theme.line};
+  border-radius:50%;
+  transform:translateY(-50%);
+}
+.ozbbNotice:before{
+  left:-10px;
+  border-right:none;
+}
+.ozbbNotice:after{
+  right:-10px;
+  border-left:none;
 }
 
 /* 프레임 */
 .ozbbFrame{
   background:${theme.frame};
-  border-radius:26px;
+  border-radius:28px;
   padding:10px;
   box-sizing:border-box;
 }
@@ -108,7 +146,7 @@ export function buildBoriboriHtml(args: {
   gap:0;
   background:#fff;
   border:2px solid ${theme.line};
-  border-radius:22px;
+  border-radius:24px;
   overflow:hidden;
 }
 
@@ -119,9 +157,7 @@ export function buildBoriboriHtml(args: {
   border-right:2px solid ${theme.line};
   border-bottom:2px solid ${theme.line};
 }
-
 .ozbbCell:nth-child(2n){ border-right:0; }
-
 .ozbbCell.lastRow{ border-bottom:0; }
 
 .ozbbLink{
@@ -130,7 +166,6 @@ export function buildBoriboriHtml(args: {
   color:inherit;
 }
 
-/* 이미지 */
 .ozbbMedia{
   position:relative;
   background:#f6f6f6;
@@ -142,7 +177,7 @@ export function buildBoriboriHtml(args: {
   display:block;
 }
 
-/* NEW/HOT */
+/* NEW/HOT 유지 */
 .ozbbBadge{
   position:absolute;
   top:10px;
@@ -158,30 +193,54 @@ export function buildBoriboriHtml(args: {
 .ozbbBadgeNew{ color:#1E66FF; }
 .ozbbBadgeHot{ color:#E53935; }
 
-/* 본문 */
 .ozbbBody{
-  padding:10px 12px 12px;
+  padding:12px 14px 12px;
   position:relative;
-  min-height:140px;
+  min-height:148px;
   box-sizing:border-box;
+}
+
+/* 상품명 라인 */
+.ozbbNameRow{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  margin:4px 0 6px;
+}
+
+/* ✅ 상품번호: 동그란 배경 안에 */
+.ozbbNo{
+  flex:0 0 auto;
+  min-width:38px;
+  height:38px;
+  padding:0 10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:${theme.numBg};
+  color:${theme.numText};
+  border-radius:999px;
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-0.02em;
 }
 
 .ozbbName{
   font-size:18px;
   font-weight:800;
-  margin:4px 0 6px;
-}
-.ozbbNo{
-  color:#D2A51F;
-  margin-right:6px;
+  line-height:1.25;
+  margin-top:4px;
+  word-break:break-word;
 }
 
-/* 옵션값 (라벨 제거) */
+/* 옵션값만 표시 */
 .ozbbOpt{
   font-size:14px;
   line-height:1.3;
   color:#333;
   word-break:break-word;
+  overflow-wrap:anywhere;
 }
 .ozbbOptRow{
   margin:4px 0;
@@ -190,8 +249,8 @@ export function buildBoriboriHtml(args: {
 /* 가격 */
 .ozbbPriceBar{
   position:absolute;
-  left:12px;
-  right:12px;
+  left:14px;
+  right:14px;
   bottom:10px;
   display:flex;
   align-items:flex-end;
@@ -199,7 +258,7 @@ export function buildBoriboriHtml(args: {
   gap:12px;
 }
 
-/* 할인율: 볼드 제거 */
+/* 할인율 볼드 제거 유지 */
 .ozbbRate{
   font-size:34px;
   font-weight:400;
@@ -207,27 +266,46 @@ export function buildBoriboriHtml(args: {
   line-height:1;
 }
 
-/* 오른쪽 */
-.ozbbRight{ text-align:right; }
-
+.ozbbRight{
+  text-align:right;
+}
 .ozbbOrigin{
   font-size:15px;
   color:#B5B5B5;
   text-decoration:line-through;
   margin-bottom:4px;
 }
-
-/* 할인가 */
 .ozbbSale{
   font-size:30px;
   font-weight:900;
   color:#E53935;
+  line-height:1;
 }
-
-/* 원 단위는 조금 작게 */
 .ozbbWon{
   font-size:0.75em;
   margin-left:2px;
+}
+
+@media (max-width:520px){
+  .ozbbNotice{
+    min-width:78%;
+    font-size:17px;
+    padding:13px 18px;
+  }
+  .ozbbName{
+    font-size:17px;
+  }
+  .ozbbNo{
+    min-width:34px;
+    height:34px;
+    font-size:17px;
+  }
+  .ozbbRate{
+    font-size:32px;
+  }
+  .ozbbSale{
+    font-size:30px;
+  }
 }
 `;
 
@@ -258,14 +336,10 @@ export function buildBoriboriHtml(args: {
           : ``;
 
       const originHtml = price
-        ? `<div class="ozbbOrigin">${won(price)}<span class="ozbbWon">원</span></div>`
+        ? `<div class="ozbbOrigin">${won(price)}원</div>`
         : `<div class="ozbbOrigin">&nbsp;</div>`;
 
-      const saleText = sale
-        ? `${won(sale)}`
-        : price
-        ? `${won(price)}`
-        : `가격문의`;
+      const saleText = sale ? won(sale) : price ? won(price) : "가격문의";
 
       const rateHtml =
         rate != null && Number.isFinite(rate)
@@ -297,7 +371,10 @@ export function buildBoriboriHtml(args: {
     </div>
 
     <div class="ozbbBody">
-      <div class="ozbbName"><span class="ozbbNo">${no}</span>${name}</div>
+      <div class="ozbbNameRow">
+        <span class="ozbbNo">${no}</span>
+        <div class="ozbbName">${name}</div>
+      </div>
 
       ${optHtml}
 
@@ -318,9 +395,9 @@ export function buildBoriboriHtml(args: {
 <div class="ozbbWrap">
   <style>${css}</style>
 
-  <table class="ozbbNotice" role="presentation">
-    <tr><td>${bannerText}</td></tr>
-  </table>
+  <div class="ozbbNoticeWrap">
+    <div class="ozbbNotice">${bannerText}</div>
+  </div>
 
   <div class="ozbbFrame">
     <div class="ozbbGrid">
@@ -328,5 +405,5 @@ export function buildBoriboriHtml(args: {
     </div>
   </div>
 </div>
-`.trim();
+  `.trim();
 }
