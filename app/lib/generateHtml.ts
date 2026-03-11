@@ -33,32 +33,32 @@ function getTheme(themeKey: ThemeKey) {
       return {
         frame: "#CFE6FF",
         line: "#BFD8F4",
-        chipText: "#5D90C6", // 블루
+        chipText: "#5D90C6",
       };
     case "pastelPink":
       return {
         frame: "#F7D9E5",
         line: "#EEC4D4",
-        chipText: "#C97F9F", // 핑크
+        chipText: "#C97F9F",
       };
     case "pastelMint":
       return {
         frame: "#D9F1E9",
         line: "#BFE2D7",
-        chipText: "#67A996", // 민트
+        chipText: "#67A996",
       };
     case "cleanWhite":
       return {
         frame: "#F3F3F3",
         line: "#E5E5E5",
-        chipText: "#111111", // 화이트 = 검정
+        chipText: "#111111",
       };
     case "yellowFrame":
     default:
       return {
         frame: "#F6D97A",
         line: "#EDCB63",
-        chipText: "#B98E18", // 진한 노랑
+        chipText: "#B98E18",
       };
   }
 }
@@ -169,21 +169,53 @@ export function buildBoriboriHtml(args: {
   display:block;
 }
 
-/* NEW/HOT 그대로 유지 */
+/* 기존 NEW/HOT 유지 */
 .ozbbBadge{
   position:absolute;
   top:10px;
   right:10px;
-  background:#fff;
   border-radius:999px;
   padding:6px 10px;
   font-size:14px;
   font-weight:900;
   box-shadow:0 6px 14px rgba(0,0,0,.12);
   border:1px solid rgba(0,0,0,.06);
+  line-height:1;
+  background:#fff;
 }
 .ozbbBadgeNew{ color:#1E66FF; }
 .ozbbBadgeHot{ color:#E53935; }
+
+/* 추가 배지 4개 */
+.ozbbBadgeSale{
+  background:#ff5d92;
+  color:#fff;
+  border-color:#ff5d92;
+}
+
+.ozbbBadgeOnly{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+
+.ozbbBadgeToday{
+  background:#3b82f6;
+  color:#fff;
+  border-color:#3b82f6;
+}
+
+.ozbbBadgeOnePlus{
+  background:transparent;
+  color:#d91c1c;
+  border:none;
+  box-shadow:none;
+  padding:0;
+  font-size:22px;
+  font-weight:900;
+  top:12px;
+  right:12px;
+}
 
 /* 본문 */
 .ozbbBody{
@@ -204,8 +236,6 @@ export function buildBoriboriHtml(args: {
   overflow:visible;
   text-overflow:clip;
   white-space:normal;
-
-  /* ✅ 제목이 1줄이어도 2줄 높이 확보해서 가격 위치 고정 */
   min-height:39px;
 }
 
@@ -220,8 +250,10 @@ export function buildBoriboriHtml(args: {
   font-weight:400;
   margin:0 3px 0 0;
 }
+
+/* 옵션 */
 .ozbbMeta{
-  height:52px;          /* 가격칸 위치 고정용 */
+  height:52px;
   margin-bottom:8px;
   overflow:hidden;
 }
@@ -242,7 +274,7 @@ export function buildBoriboriHtml(args: {
 
 .ozbbOptLine:last-child{
   display:-webkit-box;
-  -webkit-line-clamp:2;       /* 옵션2는 최대 2줄 */
+  -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
 }
@@ -254,8 +286,6 @@ export function buildBoriboriHtml(args: {
   align-items:flex-end;
   justify-content:space-between;
   gap:8px;
-
-  /* ✅ 제목 길이 달라도 같은 위치로 내려오게 */
   min-height:44px;
 }
 .ozbbRate{
@@ -322,14 +352,14 @@ export function buildBoriboriHtml(args: {
     font-size:15px;
     line-height:1.22;
     margin:3px 0 7px;
-    min-height:36px; /* ✅ 모바일에서도 제목 2줄 높이 고정 */
+    min-height:36px;
   }
 
   .ozbbMeta{
-  height:46px;          /* 모바일 가격칸 위치 고정 */
-  margin-bottom:7px;
-  overflow:hidden;
-}
+    height:46px;
+    margin-bottom:7px;
+    overflow:hidden;
+  }
 
   .ozbbOptLine{
     font-size:12px;
@@ -337,7 +367,7 @@ export function buildBoriboriHtml(args: {
   }
 
   .ozbbPriceBar{
-    min-height:40px; /* ✅ 모바일 가격 위치 고정 */
+    min-height:40px;
   }
 
   .ozbbRate{
@@ -350,6 +380,12 @@ export function buildBoriboriHtml(args: {
 
   .ozbbSale{
     font-size:23px;
+  }
+
+  .ozbbBadgeOnePlus{
+    font-size:20px;
+    top:10px;
+    right:10px;
   }
 }
 `;
@@ -371,13 +407,22 @@ export function buildBoriboriHtml(args: {
           ? Number(it.rate)
           : calcRate(price, sale);
 
-      const badge = (it.badge || "").trim().toUpperCase();
-      const badgeHtml =
-        badge === "NEW"
-          ? `<span class="ozbbBadge ozbbBadgeNew">NEW</span>`
-          : badge === "HOT"
-          ? `<span class="ozbbBadge ozbbBadgeHot">HOT</span>`
-          : "";
+      const badge = (it.badge || "").trim();
+      let badgeHtml = "";
+
+      if (badge === "NEW") {
+        badgeHtml = `<span class="ozbbBadge ozbbBadgeNew">NEW</span>`;
+      } else if (badge === "HOT") {
+        badgeHtml = `<span class="ozbbBadge ozbbBadgeHot">HOT</span>`;
+      } else if (badge === "특가") {
+        badgeHtml = `<span class="ozbbBadge ozbbBadgeSale">특가</span>`;
+      } else if (badge === "단독") {
+        badgeHtml = `<span class="ozbbBadge ozbbBadgeOnly">단독</span>`;
+      } else if (badge === "오늘만") {
+        badgeHtml = `<span class="ozbbBadge ozbbBadgeToday">오늘만</span>`;
+      } else if (badge === "1+1") {
+        badgeHtml = `<span class="ozbbBadge ozbbBadgeOnePlus">1+1</span>`;
+      }
 
       const originHtml = price
         ? `<div class="ozbbOrigin">${won(price)}원</div>`
@@ -406,11 +451,7 @@ export function buildBoriboriHtml(args: {
     </div>
 
     <div class="ozbbBody">
-      <div class="ozbbTitle">
-  <span class="ozbbNo">${no}</span>
-  <span class="ozbbSlash">/</span>
-  ${name}
-</div>
+      <div class="ozbbTitle"><span class="ozbbNo">${no}</span><span class="ozbbSlash">/</span>${name}</div>
 
       <div class="ozbbMeta">
         ${opt1 ? `<div class="ozbbOptLine">${opt1}</div>` : ""}

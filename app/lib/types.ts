@@ -13,11 +13,12 @@ export type Item = {
   imageUrl: string;
   linkUrl: string;
 
-  price: number | null; // 정상가
-  sale: number | null; // 할인가
-  rate: number | null; // 할인율 (없으면 자동 계산)
+  price: number | null;
+  sale: number | null;
+  rate: number | null;
 
-  opt1: string; // 옵션1 값
-  opt2: string; // 옵션2 값
-  badge: "" | "NEW" | "HOT";
+  opt1: string;
+  opt2: string;
+
+  badge: "" | "NEW" | "HOT" | "특가" | "단독" | "오늘만" | "1+1";
 };

@@ -162,27 +162,89 @@ function SortableRow({
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "center" }}>
-        <label style={{ fontSize: 13, fontWeight: 700 }}>
-          <input
-            type="checkbox"
-            checked={item.badge === "NEW"}
-            onChange={(e) => onChange({ badge: e.target.checked ? "NEW" : "" })}
-            style={{ marginRight: 6 }}
-          />
-          NEW
-        </label>
-        <label style={{ fontSize: 13, fontWeight: 700 }}>
-          <input
-            type="checkbox"
-            checked={item.badge === "HOT"}
-            onChange={(e) => onChange({ badge: e.target.checked ? "HOT" : "" })}
-            style={{ marginRight: 6 }}
-          />
-          HOT
-        </label>
-        <span style={{ fontSize: 12, color: "#666" }}>※ 둘 중 하나만 선택 권장</span>
-      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
+  {(["", "NEW", "HOT", "특가", "단독", "오늘만", "1+1"] as const).map((badge) => {
+    const active = item.badge === badge;
+
+    const label = badge === "" ? "없음" : badge;
+
+    let style: React.CSSProperties = {
+      border: "1px solid #D8D8D8",
+      background: "#fff",
+      color: "#111",
+      borderRadius: 999,
+      padding: "6px 10px",
+      fontSize: 12,
+      fontWeight: 800,
+      cursor: "pointer",
+    };
+
+    if (badge === "NEW") {
+      style = {
+        ...style,
+        color: active ? "#fff" : "#1E66FF",
+        background: active ? "#1E66FF" : "#fff",
+        borderColor: "#1E66FF",
+      };
+    } else if (badge === "HOT") {
+      style = {
+        ...style,
+        color: active ? "#fff" : "#E53935",
+        background: active ? "#E53935" : "#fff",
+        borderColor: "#E53935",
+      };
+    } else if (badge === "특가") {
+      style = {
+        ...style,
+        color: "#fff",
+        background: active ? "#ff5d92" : "#ff8fb2",
+        borderColor: "#ff5d92",
+      };
+    } else if (badge === "단독") {
+      style = {
+        ...style,
+        color: "#fff",
+        background: active ? "#111" : "#444",
+        borderColor: "#111",
+      };
+    } else if (badge === "오늘만") {
+      style = {
+        ...style,
+        color: "#fff",
+        background: active ? "#3b82f6" : "#6aa4ff",
+        borderColor: "#3b82f6",
+      };
+    } else if (badge === "1+1") {
+      style = {
+        ...style,
+        color: active ? "#d91c1c" : "#ef4444",
+        background: "#fff",
+        borderColor: active ? "#d91c1c" : "#ef4444",
+        fontWeight: 900,
+      };
+    } else if (badge === "") {
+      style = {
+        ...style,
+        color: active ? "#fff" : "#666",
+        background: active ? "#666" : "#fff",
+        borderColor: "#999",
+      };
+    }
+
+    return (
+      <button
+        key={badge}
+        type="button"
+        onClick={() => onChange({ badge })}
+        style={style}
+      >
+        {label}
+      </button>
+    );
+  })}
+
+  <span style={{ fontSize: 12, color: "#666" }}>배지는 1개만 선택됨</span>
+</div>
     </div>
   );
 }
