@@ -16,7 +16,7 @@ function numOnly(x: unknown) {
 }
 
 function won(n: number | null) {
-  if (!n) return "";
+  if (n == null || Number.isNaN(n)) return "";
   return n.toLocaleString("ko-KR");
 }
 
@@ -27,69 +27,63 @@ function calcRate(price: number | null, sale: number | null) {
   return Math.max(0, Math.min(99, r));
 }
 
+function getTheme(themeKey: ThemeKey) {
+  switch (themeKey) {
+    case "pastelBlue":
+      return {
+        frame: "#CFE6FF",
+        line: "#BFD8F4",
+        chipText: "#5D90C6", // 블루
+      };
+    case "pastelPink":
+      return {
+        frame: "#F7D9E5",
+        line: "#EEC4D4",
+        chipText: "#C97F9F", // 핑크
+      };
+    case "pastelMint":
+      return {
+        frame: "#D9F1E9",
+        line: "#BFE2D7",
+        chipText: "#67A996", // 민트
+      };
+    case "cleanWhite":
+      return {
+        frame: "#F3F3F3",
+        line: "#E5E5E5",
+        chipText: "#111111", // 화이트 = 검정
+      };
+    case "yellowFrame":
+    default:
+      return {
+        frame: "#F6D97A",
+        line: "#EDCB63",
+        chipText: "#B98E18", // 진한 노랑
+      };
+  }
+}
+
 export function buildBoriboriHtml(args: {
   bannerText: string;
   themeKey: ThemeKey;
   items: Item[];
 }) {
-  // ✅ 프레임색: 기존보다 더 밝은 파스텔톤
-  const theme = (() => {
-    switch (args.themeKey) {
-      case "pastelBlue":
-        return {
-          frame: "#CFE6FF",
-          line: "#CFE6FF",
-          numBg: "#D9ECFF",
-          numText: "#4F87C7",
-        };
-      case "pastelPink":
-        return {
-          frame: "#F7D7E4",
-          line: "#F7D7E4",
-          numBg: "#FBE4EC",
-          numText: "#C77395",
-        };
-      case "pastelMint":
-        return {
-          frame: "#D8F1E8",
-          line: "#D8F1E8",
-          numBg: "#E5F8F1",
-          numText: "#5FAE95",
-        };
-      case "clean":
-      case "cleanWhite":
-        return {
-          frame: "#F1F1F1",
-          line: "#E8E8E8",
-          numBg: "#F4F4F4",
-          numText: "#777777",
-        };
-      case "yellow":
-      case "yellowFrame":
-      default:
-        return {
-          // ✅ 더 밝은 파스텔 노랑
-          frame: "#F6D97A",
-          line: "#F1CF62",
-          numBg: "#F9E7A8",
-          numText: "#B58A1A",
-        };
-    }
-  })();
-
+  const theme = getTheme(args.themeKey);
   const bannerText = esc(
     args.bannerText || "이미지를 클릭하면 상세이미지를 보실 수 있어요"
   );
 
   const css = `
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
 .ozbbWrap{
   max-width:860px;
   margin:0 auto;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+  font-family:"Pretendard Variable","Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
   color:#111;
 }
 
-/* ✅ 부드러운 말풍선/클라우드 느낌 배너 */
+/* 상단 배너 */
 .ozbbNoticeWrap{
   margin:0 0 12px 0;
   display:flex;
@@ -101,8 +95,8 @@ export function buildBoriboriHtml(args: {
   max-width:100%;
   text-align:center;
   padding:14px 24px;
-  font-size:18px;
-  font-weight:800;
+  font-size:16px;
+  font-weight:700;
   letter-spacing:-0.02em;
   color:#111;
   background:#fffdf7;
@@ -115,8 +109,8 @@ export function buildBoriboriHtml(args: {
   content:"";
   position:absolute;
   top:50%;
-  width:26px;
-  height:26px;
+  width:24px;
+  height:24px;
   background:#fffdf7;
   border:2px solid ${theme.line};
   border-radius:50%;
@@ -134,35 +128,33 @@ export function buildBoriboriHtml(args: {
 /* 프레임 */
 .ozbbFrame{
   background:${theme.frame};
-  border-radius:28px;
+  border-radius:30px;
   padding:10px;
   box-sizing:border-box;
 }
 
-/* 그리드 */
+/* grid 래퍼 */
 .ozbbGrid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:0;
-  background:#fff;
-  border:2px solid ${theme.line};
+  gap:2px;
+  background:${theme.line};
   border-radius:24px;
   overflow:hidden;
 }
 
+/* 각 카드 */
 .ozbbCell{
   background:#fff;
+  min-width:0;
+  border-radius:14px;
+  overflow:hidden;
   position:relative;
-  box-sizing:border-box;
-  border-right:2px solid ${theme.line};
-  border-bottom:2px solid ${theme.line};
 }
-.ozbbCell:nth-child(2n){ border-right:0; }
-.ozbbCell.lastRow{ border-bottom:0; }
 
 .ozbbLink{
   display:block;
-  text-decoration:none;
+  text-decoration:none !important;
   color:inherit;
 }
 
@@ -177,7 +169,7 @@ export function buildBoriboriHtml(args: {
   display:block;
 }
 
-/* NEW/HOT 유지 */
+/* NEW/HOT 그대로 유지 */
 .ozbbBadge{
   position:absolute;
   top:10px;
@@ -193,124 +185,176 @@ export function buildBoriboriHtml(args: {
 .ozbbBadgeNew{ color:#1E66FF; }
 .ozbbBadgeHot{ color:#E53935; }
 
+/* 본문 */
 .ozbbBody{
-  padding:12px 14px 12px;
-  position:relative;
-  min-height:148px;
+  padding:10px 12px 12px;
   box-sizing:border-box;
-}
-
-/* 상품명 라인 */
-.ozbbNameRow{
+  min-height:136px;
   display:flex;
-  align-items:flex-start;
-  gap:8px;
-  margin:4px 0 6px;
+  flex-direction:column;
 }
 
-/* ✅ 상품번호: 동그란 배경 안에 */
+/* 제목 */
+.ozbbTitle{
+  font-size:16px;
+  font-weight:700;
+  line-height:1.24;
+  margin:4px 0 8px;
+  word-break:break-word;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:normal;
+
+  /* ✅ 제목이 1줄이어도 2줄 높이 확보해서 가격 위치 고정 */
+  min-height:39px;
+}
+
 .ozbbNo{
-  flex:0 0 auto;
-  min-width:38px;
-  height:38px;
-  padding:0 10px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:${theme.numBg};
-  color:${theme.numText};
-  border-radius:999px;
-  font-size:18px;
-  font-weight:900;
-  line-height:1;
-  letter-spacing:-0.02em;
-}
-
-.ozbbName{
-  font-size:18px;
+  color:${theme.chipText};
   font-weight:800;
-  line-height:1.25;
-  margin-top:4px;
+  margin-right:1px;
+}
+
+.ozbbSlash{
+  font-size:0.5em;
+  font-weight:400;
+  margin:0 3px 0 0;
+}
+.ozbbMeta{
+  height:52px;          /* 가격칸 위치 고정용 */
+  margin-bottom:8px;
+  overflow:hidden;
+}
+
+.ozbbOptLine{
+  font-size:13px;
+  line-height:1.28;
+  color:#444;
+  font-weight:500;
   word-break:break-word;
 }
 
-/* 옵션값만 표시 */
-.ozbbOpt{
-  font-size:14px;
-  line-height:1.3;
-  color:#333;
-  word-break:break-word;
-  overflow-wrap:anywhere;
+.ozbbOptLine:first-child{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
-.ozbbOptRow{
-  margin:4px 0;
+
+.ozbbOptLine:last-child{
+  display:-webkit-box;
+  -webkit-line-clamp:2;       /* 옵션2는 최대 2줄 */
+  -webkit-box-orient:vertical;
+  overflow:hidden;
 }
 
 /* 가격 */
 .ozbbPriceBar{
-  position:absolute;
-  left:14px;
-  right:14px;
-  bottom:10px;
+  margin-top:auto;
   display:flex;
   align-items:flex-end;
   justify-content:space-between;
-  gap:12px;
-}
+  gap:8px;
 
-/* 할인율 볼드 제거 유지 */
+  /* ✅ 제목 길이 달라도 같은 위치로 내려오게 */
+  min-height:44px;
+}
 .ozbbRate{
-  font-size:34px;
+  font-size:29px;
   font-weight:400;
   color:#E53935;
   line-height:1;
+  letter-spacing:-0.02em;
+  flex:0 0 auto;
 }
-
 .ozbbRight{
   text-align:right;
+  min-width:0;
 }
 .ozbbOrigin{
-  font-size:15px;
+  font-size:13px;
   color:#B5B5B5;
   text-decoration:line-through;
-  margin-bottom:4px;
+  margin-bottom:3px;
+  font-weight:500;
+  white-space:nowrap;
 }
 .ozbbSale{
-  font-size:30px;
-  font-weight:900;
+  font-size:26px;
+  font-weight:800;
   color:#E53935;
   line-height:1;
+  letter-spacing:-0.02em;
+  white-space:nowrap;
 }
 .ozbbWon{
-  font-size:0.75em;
+  font-size:0.72em;
   margin-left:2px;
 }
 
+/* 모바일 */
 @media (max-width:520px){
   .ozbbNotice{
     min-width:78%;
-    font-size:17px;
-    padding:13px 18px;
+    font-size:15px;
+    padding:12px 18px;
   }
-  .ozbbName{
-    font-size:17px;
+
+  .ozbbFrame{
+    border-radius:28px;
+    padding:9px;
   }
-  .ozbbNo{
-    min-width:34px;
-    height:34px;
-    font-size:17px;
+
+  .ozbbGrid{
+    border-radius:20px;
+    gap:2px;
   }
+
+  .ozbbCell{
+    border-radius:12px;
+  }
+
+  .ozbbBody{
+    padding:9px 10px 11px;
+    min-height:128px;
+  }
+
+  .ozbbTitle{
+    font-size:15px;
+    line-height:1.22;
+    margin:3px 0 7px;
+    min-height:36px; /* ✅ 모바일에서도 제목 2줄 높이 고정 */
+  }
+
+  .ozbbMeta{
+  height:46px;          /* 모바일 가격칸 위치 고정 */
+  margin-bottom:7px;
+  overflow:hidden;
+}
+
+  .ozbbOptLine{
+    font-size:12px;
+    line-height:1.25;
+  }
+
+  .ozbbPriceBar{
+    min-height:40px; /* ✅ 모바일 가격 위치 고정 */
+  }
+
   .ozbbRate{
-    font-size:32px;
+    font-size:26px;
   }
+
+  .ozbbOrigin{
+    font-size:12px;
+  }
+
   .ozbbSale{
-    font-size:30px;
+    font-size:23px;
   }
 }
 `;
 
   const items = args.items ?? [];
-  const lastRowStartIdx = Math.floor((items.length - 1) / 2) * 2;
 
   const cards = items
     .map((it, idx) => {
@@ -333,7 +377,7 @@ export function buildBoriboriHtml(args: {
           ? `<span class="ozbbBadge ozbbBadgeNew">NEW</span>`
           : badge === "HOT"
           ? `<span class="ozbbBadge ozbbBadgeHot">HOT</span>`
-          : ``;
+          : "";
 
       const originHtml = price
         ? `<div class="ozbbOrigin">${won(price)}원</div>`
@@ -346,20 +390,11 @@ export function buildBoriboriHtml(args: {
           ? `<div class="ozbbRate">${Math.round(rate)}%</div>`
           : `<div class="ozbbRate">&nbsp;</div>`;
 
-      const opt1 = esc(it.opt1 || "").replaceAll(",", ",<wbr>");
-      const opt2 = esc(it.opt2 || "").replaceAll(",", ",<wbr>");
-
-      const optHtml = `
-<div class="ozbbOpt">
-  ${opt1 ? `<div class="ozbbOptRow">${opt1}</div>` : ``}
-  ${opt2 ? `<div class="ozbbOptRow">${opt2}</div>` : ``}
-</div>`;
-
-      const isLastRow = idx >= lastRowStartIdx;
-      const cellClass = `ozbbCell${isLastRow ? " lastRow" : ""}`;
+      const opt1 = esc(it.opt1 || "").replaceAll(",", ", ");
+      const opt2 = esc(it.opt2 || "").replaceAll(",", ", ");
 
       return `
-<div class="${cellClass}">
+<div class="ozbbCell">
   <a class="ozbbLink" href="${link}" target="_blank" rel="noopener noreferrer">
     <div class="ozbbMedia">
       ${
@@ -371,12 +406,16 @@ export function buildBoriboriHtml(args: {
     </div>
 
     <div class="ozbbBody">
-      <div class="ozbbNameRow">
-        <span class="ozbbNo">${no}</span>
-        <div class="ozbbName">${name}</div>
-      </div>
+      <div class="ozbbTitle">
+  <span class="ozbbNo">${no}</span>
+  <span class="ozbbSlash">/</span>
+  ${name}
+</div>
 
-      ${optHtml}
+      <div class="ozbbMeta">
+        ${opt1 ? `<div class="ozbbOptLine">${opt1}</div>` : ""}
+        ${opt2 ? `<div class="ozbbOptLine">${opt2}</div>` : ""}
+      </div>
 
       <div class="ozbbPriceBar">
         ${rateHtml}
